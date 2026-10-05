@@ -1,4 +1,4 @@
-const API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'; // Replace with your URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbzacAAleohftPLvR_gO36kdXE1ej4RBb8meiQs-sGSLq2UJfnN3SY16ZHOnaSvXIbKNVA/exec'; // Replace with your URL
 let currentUser = null;
 let appData = { patients: [], outreaches: [] }; // In-memory cache for exports
 
