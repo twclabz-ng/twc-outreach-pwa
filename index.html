@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TWC Outreach Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#006A4E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Export Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; }
+    .twc-bg { background-color: #006A4E; }
+    .twc-text { color: #006A4E; }
+    .nav-link { transition: all 0.2s; }
+    .nav-link:hover { background-color: #E6F4F1; }
+    .view { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+  
+  <!-- Login View -->
+  <div id="loginView" class="flex items-center justify-center w-full min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 twc-bg border-t-8">
+      <h1 class="text-2xl font-bold twc-text mb-6 text-center">TWC Outreach Tracker</h1>
+      <input type="email" id="email" placeholder="Email Address" class="w-full p-3 mb-4 border rounded focus:ring-2 focus:ring-green-600 outline-none">
+      <input type="password" id="password" placeholder="Password" class="w-full p-3 mb-4 border rounded focus:ring-2 focus:ring-green-600 outline-none">
+      <button onclick="login()" class="w-full twc-bg text-white p-3 rounded font-semibold hover:bg-green-700 transition">Sign In</button>
+    </div>
+  </div>
+
+  <!-- Change Password View (NDPA Compliance) -->
+  <div id="changePassView" class="hidden flex items-center justify-center w-full min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 border-yellow-500 border-t-8">
+      <h1 class="text-2xl font-bold mb-2 text-yellow-600">Security Update</h1>
+      <p class="text-sm text-gray-500 mb-6">You must change your password before proceeding.</p>
+      <input type="password" id="newPassword" placeholder="New Password" class="w-full p-3 mb-4 border rounded outline-none">
+      <button onclick="submitNewPassword()" class="w-full bg-yellow-500 text-white p-3 rounded font-semibold hover:bg-yellow-600 transition">Update Password</button>
+    </div>
+  </div>
+
+  <!-- Dashboard Layout -->
+  <div id="dashboardView" class="hidden flex w-full h-full">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r h-full flex flex-col">
+      <div class="p-6 border-b">
+        <h1 class="text-xl font-bold twc-text">TWC MedCRM</h1>
+        <p class="text-xs text-gray-400">Outreach Tracker</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-2" id="sidebarNav">
+        <!-- Links injected based on role -->
+      </nav>
+      <div class="p-4 border-t">
+        <div class="flex items-center mb-2">
+          <div class="w-10 h-10 rounded-full twc-bg flex items-center justify-center text-white font-bold">
+            <span id="userAvatar">T</span>
+          </div>
+          <div class="ml-3">
+            <p id="userName" class="text-sm font-semibold">Super Admin</p>
+            <p id="userRole" class="text-xs text-gray-400">Super-Admin</p>
+          </div>
+        </div>
+        <button onclick="logout()" class="w-full text-left text-sm text-red-500 p-2 hover:bg-red-50 rounded">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
+      <div id="dynamicContent" class="view"></div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
