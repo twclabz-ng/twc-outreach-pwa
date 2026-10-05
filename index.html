@@ -1,79 +1,1037 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TWC Outreach Tracker</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#006A4E">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Export Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-  <style>
-    body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; }
-    .twc-bg { background-color: #006A4E; }
-    .twc-text { color: #006A4E; }
-    .nav-link { transition: all 0.2s; }
-    .nav-link:hover { background-color: #E6F4F1; }
-    .view { animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0B6E4F" />
+<title>TWC Outreach Tracker</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/logo.png" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --brand:#0B6E4F; --brand-dark:#084F39; --brand-light:#E6F4EF;
+  --accent:#F4B400; --danger:#D93025; --warn:#F9AB00; --info:#1A73E8;
+  --bg:#F7F9FB; --card:#FFFFFF; --text:#1F2937; --muted:#6B7280; --border:#E5E7EB;
+  --radius:14px; --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,sans-serif}
+button,input,select,textarea{font-family:inherit;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:10px;border:none;background:var(--brand);color:#fff;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--brand-dark)}
+.btn.secondary{background:#fff;color:var(--text);border:1px solid var(--border)}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn.danger{background:var(--danger)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.input,select,textarea{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:10px;background:#fff;outline:none;transition:.15s}
+.input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
+label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px;color:#374151}
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+#app{min-height:100vh;display:flex;flex-direction:column}
+header.topbar{background:var(--brand);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+header .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.3px;font-size:17px}
+header .logo .mark{width:32px;height:32px;border-radius:9px;background:#fff;color:var(--brand);display:grid;place-items:center;font-weight:900}
+header .user{display:flex;align-items:center;gap:10px;font-size:13px}
+header .user .avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-weight:700}
+nav.tabs{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:60px;z-index:40}
+nav.tabs button{white-space:nowrap;padding:9px 16px;border:none;background:transparent;border-radius:999px;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer}
+nav.tabs button.active{background:var(--brand-light);color:var(--brand)}
+main{flex:1;padding:22px;max-width:1200px;width:100%;margin:0 auto}
+.page{display:none;animation:fade .2s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2{margin:0 0 4px;font-size:22px;letter-spacing:-.4px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:14px}
+.stat{background:#fff;border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.stat .num{font-size:28px;font-weight:800;color:var(--brand)}
+.stat .lbl{color:var(--muted);font-size:13px;margin-top:2px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:14px}
+th{background:#F9FAFB;font-weight:700;color:#374151;font-size:13px;text-transform:uppercase;letter-spacing:.3px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFBFC}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.green{background:#D1FAE5;color:#065F46}
+.badge.yellow{background:#FEF3C7;color:#92400E}
+.badge.red{background:#FEE2E2;color:#991B1B}
+.badge.blue{background:#DBEAFE;color:#1E40AF}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;z-index:1000;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:999;backdrop-filter:blur(3px)}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 4px;font-size:20px}
+.modal .sub{margin-bottom:18px}
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#0B6E4F 0%,#084F39 100%)}
+#login .card{max-width:420px;width:100%;padding:36px 30px}
+#login .brand{text-align:center;margin-bottom:26px}
+#login .brand .mark{width:64px;height:64px;border-radius:18px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:900;margin:0 auto 12px}
+#login h1{margin:0;font-size:22px;letter-spacing:-.4px}
+#login p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.hidden{display:none!important}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar .input{max-width:280px}
+.iconbtn{background:#fff;border:1px solid var(--border);border-radius:9px;padding:8px;cursor:pointer}
+.section-title{margin:26px 0 10px;font-size:16px;font-weight:700;color:#374151;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:4px;height:18px;background:var(--brand);border-radius:2px}
+.vital-chip{display:inline-flex;align-items:center;gap:6px;background:var(--brand-light);color:var(--brand-dark);padding:5px 10px;border-radius:8px;font-size:13px;font-weight:600;margin:3px 6px 3px 0}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty svg{opacity:.4;margin-bottom:10px}
+@media(max-width:640px){
+  main{padding:14px}
+  .card{padding:16px}
+  header .user span.name{display:none}
+  .stat .num{font-size:22px}
+}
+</style>
 </head>
-<body class="h-screen flex overflow-hidden">
-  
-  <!-- Login View -->
-  <div id="loginView" class="flex items-center justify-center w-full min-h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 twc-bg border-t-8">
-      <h1 class="text-2xl font-bold twc-text mb-6 text-center">TWC Outreach Tracker</h1>
-      <input type="email" id="email" placeholder="Email Address" class="w-full p-3 mb-4 border rounded focus:ring-2 focus:ring-green-600 outline-none">
-      <input type="password" id="password" placeholder="Password" class="w-full p-3 mb-4 border rounded focus:ring-2 focus:ring-green-600 outline-none">
-      <button onclick="login()" class="w-full twc-bg text-white p-3 rounded font-semibold hover:bg-green-700 transition">Sign In</button>
-    </div>
-  </div>
+<body>
 
-  <!-- Change Password View (NDPA Compliance) -->
-  <div id="changePassView" class="hidden flex items-center justify-center w-full min-h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 border-yellow-500 border-t-8">
-      <h1 class="text-2xl font-bold mb-2 text-yellow-600">Security Update</h1>
-      <p class="text-sm text-gray-500 mb-6">You must change your password before proceeding.</p>
-      <input type="password" id="newPassword" placeholder="New Password" class="w-full p-3 mb-4 border rounded outline-none">
-      <button onclick="submitNewPassword()" class="w-full bg-yellow-500 text-white p-3 rounded font-semibold hover:bg-yellow-600 transition">Update Password</button>
-    </div>
-  </div>
-
-  <!-- Dashboard Layout -->
-  <div id="dashboardView" class="hidden flex w-full h-full">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r h-full flex flex-col">
-      <div class="p-6 border-b">
-        <h1 class="text-xl font-bold twc-text">TWC MedCRM</h1>
-        <p class="text-xs text-gray-400">Outreach Tracker</p>
+<div id="app">
+  <!-- LOGIN -->
+  <div id="login">
+    <div class="card">
+      <div class="brand">
+        <div class="mark">TWC</div>
+        <h1>TWC Outreach Tracker</h1>
+        <p>Sign in to continue</p>
       </div>
-      <nav class="flex-1 p-4 space-y-2" id="sidebarNav">
-        <!-- Links injected based on role -->
-      </nav>
-      <div class="p-4 border-t">
-        <div class="flex items-center mb-2">
-          <div class="w-10 h-10 rounded-full twc-bg flex items-center justify-center text-white font-bold">
-            <span id="userAvatar">T</span>
-          </div>
-          <div class="ml-3">
-            <p id="userName" class="text-sm font-semibold">Super Admin</p>
-            <p id="userRole" class="text-xs text-gray-400">Super-Admin</p>
-          </div>
+      <label>Email</label>
+      <input id="li-email" class="input" type="email" placeholder="you@twclabs.ng" autocomplete="username" />
+      <label>Password</label>
+      <input id="li-pass" class="input" type="password" placeholder="••••••••" autocomplete="current-password" />
+      <div style="margin-top:20px">
+        <button id="li-btn" class="btn" style="width:100%">Sign In</button>
+      </div>
+      <p style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted)">
+        Protected under NDPA 2023 · NDHA Compliant
+      </p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main" class="hidden" style="display:flex;flex-direction:column;min-height:100vh">
+    <header class="topbar">
+      <div class="logo"><div class="mark">TWC</div> TWC Outreach Tracker</div>
+      <div class="user">
+        <span class="name" id="u-name">—</span>
+        <div class="avatar" id="u-avatar">?</div>
+        <button class="iconbtn" id="logout" title="Sign out" style="background:rgba(255,255,255,.15);border:none;color:#fff">⎋</button>
+      </div>
+    </header>
+    <nav class="tabs" id="tabs"></nav>
+    <main id="view"></main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+
+<script>
+/* ============================================================
+   TWC Outreach Tracker - Frontend (GitHub Pages)
+   Backend: Google Apps Script Web App (set API_URL below)
+   ============================================================ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbzacAAleohftPLvR_gO36kdXE1ej4RBb8meiQs-sGSLq2UJfnN3SY16ZHOnaSvXIbKNVA/exec';
+
+const state = {
+  token: localStorage.getItem('twc_token') || null,
+  user: JSON.parse(localStorage.getItem('twc_user') || 'null'),
+  currentTab: null,
+  currentOutreach: null,
+  cache: { patients: [], outreaches: [] }
+};
+
+/* ---------- Utilities ---------- */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const toast = (msg, t=2800) => { const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),t); };
+const escapeHtml = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = d => d ? new Date(d).toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+
+async function api(action, payload={}) {
+  const res = await fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action, token: state.token, ...payload })
+  });
+  const data = await res.json();
+  if (!data.ok && data.code === 'AUTH') { logout(); throw new Error(data.error||'Session expired'); }
+  if (!data.ok) throw new Error(data.error || 'Request failed');
+  return data.data;
+}
+
+/* ---------- Auth ---------- */
+function showLogin(){ $('#login').style.display='flex'; $('#main').classList.add('hidden'); }
+function showMain(){ $('#login').style.display='none'; $('#main').classList.remove('hidden'); }
+
+async function login(email, password) {
+  const res = await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'login',email,password})});
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error||'Login failed');
+  state.token = data.data.token;
+  state.user = data.data.user;
+  localStorage.setItem('twc_token', state.token);
+  localStorage.setItem('twc_user', JSON.stringify(state.user));
+  if (data.data.mustChangePassword) promptPasswordChange(true);
+  else boot();
+}
+
+function logout(){
+  localStorage.removeItem('twc_token'); localStorage.removeItem('twc_user');
+  state.token=null; state.user=null; showLogin();
+}
+
+/* ---------- Navigation ---------- */
+const TABS_BY_ROLE = {
+  superadmin:   ['dashboard','outreaches','patients','referrals','staff','reports','audit'],
+  coordinator:  ['dashboard','outreaches','patients','referrals','staff','reports'],
+  nurse:        ['dashboard','patients','vitals'],
+  lab:          ['dashboard','patients','lab'],
+  optometrist:  ['dashboard','patients','eye'],
+  dentist:      ['dashboard','patients','dental']
+};
+
+const ROLE_LABEL = {
+  superadmin:'Super Admin', coordinator:'Outreach Coordinator', nurse:'Nurse',
+  lab:'Lab Technician', optometrist:'Optometrist', dentist:'Dentist'
+};
+
+function renderTabs(){
+  const tabs = TABS_BY_ROLE[state.user.role] || ['dashboard'];
+  const nav = $('#tabs'); nav.innerHTML='';
+  tabs.forEach(t=>{
+    const b=document.createElement('button');
+    b.textContent = t.charAt(0).toUpperCase()+t.slice(1);
+    b.dataset.tab=t;
+    b.onclick=()=>goto(t);
+    nav.appendChild(b);
+  });
+  goto(tabs[0]);
+}
+
+function goto(tab){
+  state.currentTab=tab;
+  $$('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  const view=$('#view'); view.innerHTML='<div class="empty">Loading…</div>';
+  ({dashboard:viewDashboard, outreaches:viewOutreaches, patients:viewPatients,
+    vitals:viewVitals, lab:viewLab, eye:viewEye, dental:viewDental,
+    referrals:viewReferrals, staff:viewStaff, reports:viewReports, audit:viewAudit
+  }[tab] || viewDashboard)().catch(e=>{ view.innerHTML=`<div class="card"><b>Error:</b> ${escapeHtml(e.message)}</div>`; });
+}
+
+/* ---------- Boot ---------- */
+function boot(){
+  $('#u-name').textContent = state.user.fullName || state.user.email;
+  $('#u-avatar').textContent = (state.user.fullName||state.user.email).charAt(0).toUpperCase();
+  showMain(); renderTabs();
+}
+
+$('#li-btn').onclick = async () => {
+  const email=$('#li-email').value.trim(), pass=$('#li-pass').value;
+  if(!email||!pass) return toast('Enter email and password');
+  $('#li-btn').disabled=true; $('#li-btn').textContent='Signing in…';
+  try{ await login(email,pass); } catch(e){ toast(e.message); }
+  $('#li-btn').disabled=false; $('#li-btn').textContent='Sign In';
+};
+$('#li-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#li-btn').click(); });
+$('#logout').onclick = logout;
+
+/* ---------- Modal ---------- */
+function openModal(html,{onClose}={}){
+  $('#modal').innerHTML=html;
+  $('#modal-bg').classList.add('show');
+  $('#modal-bg').onclick = e => { if(e.target.id==='modal-bg') closeModal(onClose); };
+}
+function closeModal(cb){ $('#modal-bg').classList.remove('show'); cb && cb(); }
+
+/* ---------- First-login password change ---------- */
+function promptPasswordChange(force){
+  openModal(`
+    <h3>${force?'Set a new password':'Change password'}</h3>
+    <p class="sub">For security, please replace your temporary password.</p>
+    <label>New password</label>
+    <input id="np" class="input" type="password" placeholder="Min 8 chars, 1 uppercase, 1 number" />
+    <label>Confirm new password</label>
+    <input id="cp" class="input" type="password" />
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn" id="pc-save" style="flex:1">Save password</button>
+      ${force?'':'<button class="btn secondary" onclick="closeModal()">Cancel</button>'}
+    </div>`);
+  $('#pc-save').onclick = async () => {
+    const np=$('#np').value, cp=$('#cp').value;
+    if(np.length<8||!/[A-Z]/.test(np)||!/\d/.test(np)) return toast('Password too weak');
+    if(np!==cp) return toast('Passwords do not match');
+    try{
+      await api('changePassword',{newPassword:np});
+      toast('Password updated');
+      closeModal(); if(force) boot();
+    }catch(e){ toast(e.message); }
+  };
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+
+async function viewDashboard(){
+  const data = await api('dashboard');
+  const s=data.stats;
+  const cards = [
+    ['Today\'s registrations', s.todayPatients],
+    ['Total outreaches', s.outreaches],
+    ['Pending vitals', s.pendingVitals],
+    ['Pending lab', s.pendingLab],
+    ['Pending eye', s.pendingEye],
+    ['Pending dental', s.pendingDental]
+  ];
+  $('#view').innerHTML = `
+    <h2>Welcome, ${escapeHtml((state.user.fullName||'').split(' ')[0]||'there')} 👋</h2>
+    <p class="sub">${ROLE_LABEL[state.user.role]} · ${escapeHtml(state.currentOutreach?.name || 'All sites')}</p>
+    <div class="grid-cards">
+      ${cards.map(([l,n])=>`<div class="stat"><div class="num">${n??0}</div><div class="lbl">${l}</div></div>`).join('')}
+    </div>
+    <div class="section-title">Recent activity</div>
+    <div class="card">
+      ${data.recent.length? `<table><thead><tr><th>Time</th><th>Action</th><th>Patient</th><th>User</th></tr></thead><tbody>
+      ${data.recent.map(r=>`<tr><td>${new Date(r.ts).toLocaleString('en-NG')}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(r.patient||'—')}</td><td>${escapeHtml(r.user||'—')}</td></tr>`).join('')}
+      </tbody></table>` : '<div class="empty">No recent activity</div>'}
+    </div>`;
+}
+
+async function viewOutreaches(){
+  const list = await api('listOutreaches');
+  $('#view').innerHTML = `
+    <h2>Outreaches</h2>
+    <p class="sub">Create and manage outreach events across sites</p>
+    <div class="toolbar">
+      <input id="q" class="input" placeholder="Search by name, venue…" />
+      <button class="btn" id="new-outreach">+ New outreach</button>
+      <button class="btn secondary" id="exp-outreach">⬇ Export</button>
+    </div>
+    <div id="outreach-list"></div>`;
+
+  const render = (filter='') => {
+    const rows = list.filter(o=>!filter || (o.name+o.venue).toLowerCase().includes(filter.toLowerCase()));
+    $('#outreach-list').innerHTML = rows.length ? `<table>
+      <thead><tr><th>Name</th><th>Date</th><th>Venue</th><th>Site</th><th>Staff</th><th>Patients</th><th></th></tr></thead>
+      <tbody>${rows.map(o=>`
+        <tr>
+          <td><b>${escapeHtml(o.name)}</b></td>
+          <td>${fmtDate(o.date)}</td>
+          <td>${escapeHtml(o.venue)}</td>
+          <td><span class="badge blue">${escapeHtml(o.site||'—')}</span></td>
+          <td>${o.staffCount||0}</td>
+          <td>${o.patientCount||0}</td>
+          <td style="text-align:right">
+            <button class="btn ghost" data-view="${o.id}">Open</button>
+          </td>
+        </tr>`).join('')}</tbody></table>` : '<div class="empty">No outreaches yet</div>';
+  };
+  render();
+  $('#q').oninput = e => render(e.target.value);
+  $('#new-outreach').onclick = () => newOutreachModal(render);
+  $('#exp-outreach').onclick = () => exportMenu('outreaches', list);
+  $$('#outreach-list [data-view]').forEach(b => b.onclick = () => openOutreach(b.dataset.view));
+}
+
+function newOutreachModal(onSaved){
+  openModal(`
+    <h3>New outreach</h3>
+    <p class="sub">Create an outreach event for a site</p>
+    <label>Outreach name</label>
+    <input id="o-name" class="input" placeholder="e.g. Ikeja Community Health Drive" />
+    <label>Date</label>
+    <input id="o-date" class="input" type="date" />
+    <div class="row">
+      <div><label>Venue</label><input id="o-venue" class="input" placeholder="e.g. Ikeja PHC" /></div>
+      <div><label>Site / LGA</label><input id="o-site" class="input" placeholder="e.g. Lagos - Ikeja" /></div>
+    </div>
+    <label>Notes (optional)</label>
+    <textarea id="o-notes" class="input" rows="2"></textarea>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn" id="o-save" style="flex:1">Create outreach</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`);
+  $('#o-save').onclick = async () => {
+    const name=$('#o-name').value.trim(), date=$('#o-date').value, venue=$('#o-venue').value.trim(), site=$('#o-site').value.trim();
+    if(!name||!date||!venue) return toast('Name, date and venue required');
+    try{
+      await api('createOutreach',{name,date,venue,site,notes:$('#o-notes').value});
+      toast('Outreach created'); closeModal(); onSaved && onSaved();
+    }catch(e){ toast(e.message); }
+  };
+}
+
+async function openOutreach(id){
+  const o = await api('getOutreach',{id});
+  state.currentOutreach = o;
+  openModal(`
+    <h3>${escapeHtml(o.name)}</h3>
+    <p class="sub">${fmtDate(o.date)} · ${escapeHtml(o.venue)} · ${escapeHtml(o.site||'—')}</p>
+    <div class="section-title" style="margin-top:16px">Staff attendance (${o.staff.length})</div>
+    <div id="staff-list">${o.staff.length? o.staff.map(s=>`<span class="vital-chip">${escapeHtml(s.name)} · ${ROLE_LABEL[s.role]||s.role}</span>`).join('') : '<div class="empty" style="padding:20px">No staff assigned</div>'}</div>
+    <button class="btn secondary" id="add-staff" style="margin-top:8px">+ Record staff attendance</button>
+    <div class="section-title">Summary</div>
+    <div class="grid-cards" style="grid-template-columns:1fr 1fr">
+      <div class="stat"><div class="num">${o.patientCount}</div><div class="lbl">Patients registered</div></div>
+      <div class="stat"><div class="num">${o.completedCount||0}</div><div class="lbl">Completed all stations</div></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
+      <button class="btn" id="set-current">Set as active</button>
+      <button class="btn secondary" id="exp-one">⬇ Export</button>
+      <button class="btn secondary" onclick="closeModal()">Close</button>
+    </div>`);
+  $('#add-staff').onclick = () => addStaffModal(o.id, ()=>openOutreach(id));
+  $('#set-current').onclick = () => { state.currentOutreach=o; localStorage.setItem('twc_outreach', JSON.stringify(o)); toast('Active outreach: '+o.name); closeModal(); };
+  $('#exp-one').onclick = () => exportMenu('outreach', [o]);
+}
+
+function addStaffModal(outreachId, onSaved){
+  api('listStaff').then(staff=>{
+    openModal(`
+      <h3>Record staff attendance</h3>
+      <p class="sub">Select staff present at this outreach</p>
+      <div id="staff-picker">
+        ${staff.map(s=>`<label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:10px;margin:6px 0;cursor:pointer">
+          <input type="checkbox" value="${s.email}" ${s._present?'checked':''} style="width:auto">
+          <span><b>${escapeHtml(s.fullName)}</b><br><small style="color:var(--muted)">${ROLE_LABEL[s.role]||s.role} · ${escapeHtml(s.email)}</small></span>
+        </label>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn" id="st-save" style="flex:1">Save</button>
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      </div>`);
+    $('#st-save').onclick = async () => {
+      const emails = $$('#staff-picker input:checked').map(i=>i.value);
+      try{ await api('setOutreachStaff',{outreachId, emails}); toast('Staff recorded'); closeModal(); onSaved&&onSaved(); }
+      catch(e){ toast(e.message); }
+    };
+  });
+}
+
+async function viewPatients(){
+  const data = await api('listPatients');
+  $('#view').innerHTML = `
+    <h2>Patients</h2>
+    <p class="sub">Registered patients${state.currentOutreach? ' · '+escapeHtml(state.currentOutreach.name):''}</p>
+    <div class="toolbar">
+      <input id="pq" class="input" placeholder="Search name, phone…" />
+      ${['coordinator','superadmin'].includes(state.user.role)?'<button class="btn" id="new-p">+ Register patient</button>':''}
+      <button class="btn secondary" id="exp-p">⬇ Export</button>
+    </div>
+    <div id="p-list"></div>`;
+  const render = (f='') => {
+    const rows = data.filter(p=>!f || (p.fullName+p.phone).toLowerCase().includes(f.toLowerCase()));
+    $('#p-list').innerHTML = rows.length ? `<table>
+      <thead><tr><th>Name</th><th>Age/Sex</th><th>Phone</th><th>Reg. ID</th><th>Stations</th><th></th></tr></thead>
+      <tbody>${rows.map(p=>`<tr>
+        <td><b>${escapeHtml(p.fullName)}</b></td>
+        <td>${escapeHtml(p.age||'—')} / ${escapeHtml(p.sex||'—')}</td>
+        <td>${escapeHtml(p.phone||'—')}</td>
+        <td><code style="font-size:12px">${escapeHtml(p.regId)}</code></td>
+        <td>
+          ${p.vitalsDone?'<span class="badge green">Vitals</span>':''}
+          ${p.labDone?'<span class="badge green">Lab</span>':''}
+          ${p.eyeDone?'<span class="badge green">Eye</span>':''}
+          ${p.dentalDone?'<span class="badge green">Dental</span>':''}
+        </td>
+        <td style="text-align:right"><button class="btn ghost" data-open="${p.regId}">Open</button></td>
+      </tr>`).join('')}</tbody></table>` : '<div class="empty">No patients yet</div>';
+  };
+  render();
+  $('#pq').oninput = e=>render(e.target.value);
+  const np=$('#new-p'); if(np) np.onclick = () => newPatientModal(()=>goto('patients'));
+  $('#exp-p').onclick = ()=>exportMenu('patients', data);
+  $$('#p-list [data-open]').forEach(b=>b.onclick=()=>openPatient(b.dataset.open));
+}
+
+function newPatientModal(onSaved){
+  const o = state.currentOutreach || JSON.parse(localStorage.getItem('twc_outreach')||'null');
+  if(!o) return toast('Select an active outreach first');
+  openModal(`
+    <h3>Register patient</h3>
+    <p class="sub">${escapeHtml(o.name)} · ${fmtDate(o.date)}</p>
+    <label>Full name *</label><input id="p-name" class="input" />
+    <div class="row">
+      <div><label>Age</label><input id="p-age" class="input" type="number" min="0" max="120" /></div>
+      <div><label>Sex</label><select id="p-sex" class="input"><option value="">—</option><option>Female</option><option>Male</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>Phone</label><input id="p-phone" class="input" type="tel" placeholder="080…" /></div>
+      <div><label>Email</label><input id="p-email" class="input" type="email" /></div>
+    </div>
+    <label>Address / Community</label><input id="p-addr" class="input" />
+    <label style="display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-weight:500;font-size:13px">
+      <input id="p-consent" type="checkbox" style="width:auto;margin-top:2px">
+      <span>Patient has given informed consent for data capture and processing per NDPA 2023.</span>
+    </label>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn" id="p-save" style="flex:1">Register & assign</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`);
+  $('#p-save').onclick = async () => {
+    if(!$('#p-name').value.trim()) return toast('Name required');
+    if(!$('#p-consent').checked) return toast('Consent required');
+    try{
+      const r = await api('registerPatient',{
+        outreachId:o.id, fullName:$('#p-name').value.trim(), age:$('#p-age').value,
+        sex:$('#p-sex').value, phone:$('#p-phone').value.trim(),
+        email:$('#p-email').value.trim(), address:$('#p-addr').value.trim()
+      });
+      toast('Patient registered: '+r.regId); closeModal(); onSaved && onSaved();
+    }catch(e){ toast(e.message); }
+  };
+}
+
+async function openPatient(regId){
+  const p = await api('getPatient',{regId});
+  const vitals = p.vitals||{}, lab=p.lab||{}, eye=p.eye||{}, dental=p.dental||{};
+  openModal(`
+    <h3>${escapeHtml(p.fullName)}</h3>
+    <p class="sub">${escapeHtml(p.regId)} · ${p.age||'—'}y ${escapeHtml(p.sex||'')} · ${escapeHtml(p.phone||'—')}</p>
+
+    <div class="section-title">Vital signs</div>
+    ${vitals.done ? `<div>
+      <span class="vital-chip">BP ${escapeHtml(vitals.bp||'—')}</span>
+      <span class="vital-chip">Pulse ${escapeHtml(vitals.pulse||'—')} bpm</span>
+      <span class="vital-chip">Temp ${escapeHtml(vitals.temp||'—')} °C</span>
+      <span class="vital-chip">SpO₂ ${escapeHtml(vitals.spo2||'—')} %</span>
+      <span class="vital-chip">Wt ${escapeHtml(vitals.weight||'—')} kg</span>
+      <span class="vital-chip">Ht ${escapeHtml(vitals.height||'—')} cm</span>
+      <span class="vital-chip">BMI ${escapeHtml(vitals.bmi||'—')}</span>
+    </div>` : '<div class="empty" style="padding:16px">Not captured</div>'}
+
+    <div class="section-title">Laboratory</div>
+    ${lab.done ? `<div><span class="vital-chip">Glucose ${escapeHtml(lab.glucose||'—')} mmol/L (${escapeHtml(lab.glucoseType||'—')})</span></div>` : '<div class="empty" style="padding:16px">Not captured</div>'}
+
+    <div class="section-title">Eye check</div>
+    ${eye.done ? `<div>
+      <span class="vital-chip">VA R ${escapeHtml(eye.vaRight||'—')}</span>
+      <span class="vital-chip">VA L ${escapeHtml(eye.vaLeft||'—')}</span>
+      <span class="vital-chip">${escapeHtml(eye.impression||'—')}</span>
+    </div>` : '<div class="empty" style="padding:16px">Not captured</div>'}
+
+    <div class="section-title">Dental check</div>
+    ${dental.done ? `<div>
+      <span class="vital-chip">${escapeHtml(dental.oralHygiene||'—')}</span>
+      <span class="vital-chip">${escapeHtml(dental.condition||'—')}</span>
+    </div>` : '<div class="empty" style="padding:16px">Not captured</div>'}
+
+    <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
+      <button class="btn secondary" id="ref-btn">Referral slip</button>
+      <button class="btn secondary" onclick="closeModal()">Close</button>
+    </div>`);
+  $('#ref-btn').onclick = () => referralModal(p);
+}
+
+/* ---------- Vitals ---------- */
+async function viewVitals(){
+  const pending = await api('patientsPending',{station:'vitals'});
+  const recent  = await api('patientsCompleted',{station:'vitals'});
+  $('#view').innerHTML = `
+    <h2>Vital Signs Station</h2>
+    <p class="sub">Capture blood pressure, weight, height, temperature, SpO₂, pulse and BMI</p>
+    <div class="section-title">Awaiting vitals (${pending.length})</div>
+    <div id="vp">${pending.length? pending.map(p=>patientRow(p,'vitals')).join(''):'<div class="empty">All patients have vitals captured 🎉</div>'}</div>
+    <div class="section-title">Recently completed</div>
+    <div id="vc">${recent.length? recent.map(p=>patientRow(p,'vitals',true)).join(''):'<div class="empty">Nothing yet</div>'}</div>`;
+  bindPatientRows();
+}
+
+async function viewLab(){
+  const pending = await api('patientsPending',{station:'lab'});
+  const recent  = await api('patientsCompleted',{station:'lab'});
+  $('#view').innerHTML = `
+    <h2>Laboratory Station</h2>
+    <p class="sub">Blood glucose (fasting / random) — RBS, FBS</p>
+    <div class="section-title">Awaiting lab (${pending.length})</div>
+    <div>${pending.length? pending.map(p=>patientRow(p,'lab')).join(''):'<div class="empty">All caught up 🎉</div>'}</div>
+    <div class="section-title">Recently completed</div>
+    <div>${recent.length? recent.map(p=>patientRow(p,'lab',true)).join(''):'<div class="empty">Nothing yet</div>'}</div>`;
+  bindPatientRows();
+}
+
+async function viewEye(){
+  const pending = await api('patientsPending',{station:'eye'});
+  const recent  = await api('patientsCompleted',{station:'eye'});
+  $('#view').innerHTML = `
+    <h2>Eye Clinic</h2>
+    <p class="sub">Basic eye check — visual acuity, impressions, referral</p>
+    <div class="section-title">Awaiting eye check (${pending.length})</div>
+    <div>${pending.length? pending.map(p=>patientRow(p,'eye')).join(''):'<div class="empty">All caught up 🎉</div>'}</div>
+    <div class="section-title">Recently completed</div>
+    <div>${recent.length? recent.map(p=>patientRow(p,'eye',true)).join(''):'<div class="empty">Nothing yet</div>'}</div>`;
+  bindPatientRows();
+}
+
+async function viewDental(){
+  const pending = await api('patientsPending',{station:'dental'});
+  const recent  = await api('patientsCompleted',{station:'dental'});
+  $('#view').innerHTML = `
+    <h2>Dental Clinic</h2>
+    <p class="sub">Basic dental check — oral hygiene, condition, plan</p>
+    <div class="section-title">Awaiting dental check (${pending.length})</div>
+    <div>${pending.length? pending.map(p=>patientRow(p,'dental')).join(''):'<div class="empty">All caught up 🎉</div>'}</div>
+    <div class="section-title">Recently completed</div>
+    <div>${recent.length? recent.map(p=>patientRow(p,'dental',true)).join(''):'<div class="empty">Nothing yet</div>'}</div>`;
+  bindPatientRows();
+}
+
+function patientRow(p, station, done=false){
+  return `<div class="card" style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div>
+      <b>${escapeHtml(p.fullName)}</b>
+      <div style="color:var(--muted);font-size:13px">${escapeHtml(p.regId)} · ${p.age||'—'}y ${escapeHtml(p.sex||'')} · ${escapeHtml(p.phone||'')}</div>
+    </div>
+    <div>
+      ${done?'<span class="badge green">Done</span>':''}
+      <button class="btn ${done?'secondary':''}" data-station="${station}" data-reg="${p.regId}">${done?'View / edit':'Capture'}</button>
+    </div>
+  </div>`;
+}
+
+function bindPatientRows(){
+  $$('[data-station][data-reg]').forEach(b=>{
+    b.onclick = () => ({
+      vitals: vitalsModal, lab: labModal, eye: eyeModal, dental: dentalModal
+    }[b.dataset.station])(b.dataset.reg, ()=>goto(state.currentTab));
+  });
+}
+
+/* ---------- Station forms ---------- */
+function calcBmi(w,h){ w=parseFloat(w); h=parseFloat(h)/100; return (w&&h)? (w/(h*h)).toFixed(1) : ''; }
+
+function vitalsModal(regId, onSaved){
+  api('getPatient',{regId}).then(p=>{
+    const v=p.vitals||{};
+    openModal(`
+      <h3>Vital signs — ${escapeHtml(p.fullName)}</h3>
+      <p class="sub">${escapeHtml(p.regId)} · ${p.age||'—'}y ${escapeHtml(p.sex||'')}</p>
+      <div class="row">
+        <div><label>Blood pressure (mmHg)</label><input id="v-bp" class="input" placeholder="120/80" value="${escapeHtml(v.bp||'')}" /></div>
+        <div><label>Pulse (bpm)</label><input id="v-pulse" class="input" type="number" value="${escapeHtml(v.pulse||'')}" /></div>
+      </div>
+      <div class="row">
+        <div><label>Temperature (°C)</label><input id="v-temp" class="input" type="number" step="0.1" value="${escapeHtml(v.temp||'')}" /></div>
+        <div><label>SpO₂ (%)</label><input id="v-spo2" class="input" type="number" value="${escapeHtml(v.spo2||'')}" /></div>
+      </div>
+      <div class="row">
+        <div><label>Weight (kg)</label><input id="v-w" class="input" type="number" step="0.1" value="${escapeHtml(v.weight||'')}" /></div>
+        <div><label>Height (cm)</label><input id="v-h" class="input" type="number" value="${escapeHtml(v.height||'')}" /></div>
+      </div>
+      <label>BMI (auto)</label><input id="v-bmi" class="input" readonly value="${escapeHtml(v.bmi||'')}" style="background:#F3F4F6" />
+      <label>Notes (optional)</label><textarea id="v-notes" class="input" rows="2">${escapeHtml(v.notes||'')}</textarea>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn" id="v-save" style="flex:1">Save vitals</button>
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      </div>`);
+    const recalc = () => $('#v-bmi').value = calcBmi($('#v-w').value, $('#v-h').value);
+    $('#v-w').oninput=recalc; $('#v-h').oninput=recalc;
+    $('#v-save').onclick = async () => {
+      const payload = {
+        regId, bp:$('#v-bp').value.trim(), pulse:$('#v-pulse').value,
+        temp:$('#v-temp').value, spo2:$('#v-spo2').value,
+        weight:$('#v-w').value, height:$('#v-h').value,
+        bmi:$('#v-bmi').value, notes:$('#v-notes').value
+      };
+      if(!payload.bp) return toast('BP is required');
+      try{ await api('saveVitals',payload); toast('Vitals saved'); closeModal(); onSaved&&onSaved(); }
+      catch(e){ toast(e.message); }
+    };
+  });
+}
+
+function labModal(regId, onSaved){
+  api('getPatient',{regId}).then(p=>{
+    const l=p.lab||{};
+    openModal(`
+      <h3>Laboratory — ${escapeHtml(p.fullName)}</h3>
+      <p class="sub">${escapeHtml(p.regId)}</p>
+      <label>Test type *</label>
+      <select id="l-type" class="input">
+        <option ${l.glucoseType==='FBS'?'selected':''}>FBS</option>
+        <option ${l.glucoseType==='RBS'?'selected':''}>RBS</option>
+      </select>
+      <label>Blood glucose (mmol/L) *</label>
+      <input id="l-glu" class="input" type="number" step="0.1" value="${escapeHtml(l.glucose||'')}" />
+      <label>Notes</label>
+      <textarea id="l-notes" class="input" rows="2">${escapeHtml(l.notes||'')}</textarea>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn" id="l-save" style="flex:1">Save lab result</button>
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      </div>`);
+    $('#l-save').onclick = async () => {
+      if(!$('#l-glu').value) return toast('Glucose value required');
+      try{ await api('saveLab',{regId, glucoseType:$('#l-type').value, glucose:$('#l-glu').value, notes:$('#l-notes').value});
+        toast('Lab result saved'); closeModal(); onSaved&&onSaved(); }
+      catch(e){ toast(e.message); }
+    };
+  });
+}
+
+function eyeModal(regId, onSaved){
+  api('getPatient',{regId}).then(p=>{
+    const e=p.eye||{};
+    openModal(`
+      <h3>Eye check — ${escapeHtml(p.fullName)}</h3>
+      <p class="sub">${escapeHtml(p.regId)} · Visual acuity (Snellen: 6/6 etc.)</p>
+      <div class="row">
+        <div><label>Right eye (OD)</label><input id="e-r" class="input" placeholder="6/6" value="${escapeHtml(e.vaRight||'')}" /></div>
+        <div><label>Left eye (OS)</label><input id="e-l" class="input" placeholder="6/6" value="${escapeHtml(e.vaLeft||'')}" /></div>
+      </div>
+      <label>Impression</label>
+      <select id="e-imp" class="input">
+        ${['Normal','Refractive error','Cataract','Glaucoma suspect','Conjunctivitis','Allergic eye','Trauma','Other'].map(x=>`<option ${e.impression===x?'selected':''}>${x}</option>`).join('')}
+      </select>
+      <label>Plan / Recommendation</label>
+      <textarea id="e-plan" class="input" rows="2">${escapeHtml(e.plan||'')}</textarea>
+      <label>Notes</label>
+      <textarea id="e-notes" class="input" rows="2">${escapeHtml(e.notes||'')}</textarea>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn" id="e-save" style="flex:1">Save eye check</button>
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      </div>`);
+    $('#e-save').onclick = async () => {
+      try{ await api('saveEye',{regId, vaRight:$('#e-r').value, vaLeft:$('#e-l').value, impression:$('#e-imp').value, plan:$('#e-plan').value, notes:$('#e-notes').value});
+        toast('Eye check saved'); closeModal(); onSaved&&onSaved(); }
+      catch(e){ toast(e.message); }
+    };
+  });
+}
+
+function dentalModal(regId, onSaved){
+  api('getPatient',{regId}).then(p=>{
+    const d=p.dental||{};
+    openModal(`
+      <h3>Dental check — ${escapeHtml(p.fullName)}</h3>
+      <p class="sub">${escapeHtml(p.regId)}</p>
+      <label>Oral hygiene</label>
+      <select id="d-hyg" class="input">
+        ${['Good','Fair','Poor'].map(x=>`<option ${d.oralHygiene===x?'selected':''}>${x}</option>`).join('')}
+      </select>
+      <label>Condition</label>
+      <select id="d-cond" class="input">
+        ${['Normal','Dental caries','Gingivitis','Periodontitis','Oral ulcer','Missing teeth','Other'].map(x=>`<option ${d.condition===x?'selected':''}>${x}</option>`).join('')}
+      </select>
+      <label>Treatment / Plan</label>
+      <textarea id="d-plan" class="input" rows="2">${escapeHtml(d.plan||'')}</textarea>
+      <label>Notes</label>
+      <textarea id="d-notes" class="input" rows="2">${escapeHtml(d.notes||'')}</textarea>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn" id="d-save" style="flex:1">Save dental check</button>
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      </div>`);
+    $('#d-save').onclick = async () => {
+      try{ await api('saveDental',{regId, oralHygiene:$('#d-hyg').value, condition:$('#d-cond').value, plan:$('#d-plan').value, notes:$('#d-notes').value});
+        toast('Dental check saved'); closeModal(); onSaved&&onSaved(); }
+      catch(e){ toast(e.message); }
+    };
+  });
+}
+
+/* ---------- Referral ---------- */
+function referralModal(p){
+  openModal(`
+    <h3>Generate referral slip</h3>
+    <p class="sub">${escapeHtml(p.fullName)} · ${escapeHtml(p.regId)}</p>
+    <label>Referred to</label>
+    <input id="r-to" class="input" placeholder="e.g. General Hospital Ikeja — Ophthalmology" />
+    <label>Reason / Findings</label>
+    <textarea id="r-reason" class="input" rows="3"></textarea>
+    <label>Urgency</label>
+    <select id="r-urg" class="input"><option>Routine</option><option>Soon (within 2 weeks)</option><option>Urgent</option></select>
+    <label>Additional notes</label>
+    <textarea id="r-notes" class="input" rows="2"></textarea>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn" id="r-print" style="flex:1">Generate & print slip</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`);
+  $('#r-print').onclick = async () => {
+    const payload = {
+      regId:p.regId, to:$('#r-to').value, reason:$('#r-reason').value,
+      urgency:$('#r-urg').value, notes:$('#r-notes').value
+    };
+    if(!payload.to||!payload.reason) return toast('Destination and reason required');
+    try{
+      const r = await api('createReferral', payload);
+      printReferral(r.referral);
+      closeModal();
+    }catch(e){ toast(e.message); }
+  };
+}
+
+function printReferral(ref){
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html><head><title>Referral — ${escapeHtml(ref.patientName)}</title>
+    <style>body{font-family:Inter,sans-serif;padding:40px;color:#111}
+      .hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0B6E4F;padding-bottom:14px}
+      .hdr h1{margin:0;color:#0B6E4F;font-size:22px}
+      .hdr p{margin:4px 0;color:#666;font-size:12px}
+      .box{border:1px solid #e5e7eb;border-radius:10px;padding:18px;margin-top:18px}
+      .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#666;font-weight:700}
+      .val{font-size:15px;margin-top:4px}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+      .sig{margin-top:60px;display:flex;justify-content:space-between}
+      .sig div{border-top:1px solid #999;width:220px;text-align:center;padding-top:6px;font-size:12px}
+      .urgent{color:#b91c1c;font-weight:700}
+      @media print{.noprint{display:none}}
+    </style></head><body>
+      <div class="hdr">
+        <div><h1>TWC Outreach Tracker</h1><p>Community Health Outreach · Referral Slip</p></div>
+        <div style="text-align:right;font-size:12px;color:#666">
+          <div>Ref: <b>${escapeHtml(ref.refId)}</b></div>
+          <div>${new Date(ref.ts).toLocaleString('en-NG')}</div>
         </div>
-        <button onclick="logout()" class="w-full text-left text-sm text-red-500 p-2 hover:bg-red-50 rounded">Logout</button>
       </div>
-    </aside>
+      <div class="box">
+        <div class="grid">
+          <div><div class="lbl">Patient</div><div class="val">${escapeHtml(ref.patientName)}</div></div>
+          <div><div class="lbl">Patient ID</div><div class="val">${escapeHtml(ref.regId)}</div></div>
+          <div><div class="lbl">Age / Sex</div><div class="val">${ref.age||'—'} / ${escapeHtml(ref.sex||'—')}</div></div>
+          <div><div class="lbl">Phone</div><div class="val">${escapeHtml(ref.phone||'—')}</div></div>
+        </div>
+      </div>
+      <div class="box">
+        <div class="lbl">Referred to</div><div class="val" style="font-weight:700;font-size:17px">${escapeHtml(ref.to)}</div>
+        <div class="grid" style="margin-top:14px">
+          <div><div class="lbl">Urgency</div><div class="val ${ref.urgency==='Urgent'?'urgent':''}">${escapeHtml(ref.urgency)}</div></div>
+          <div><div class="lbl">Referred by</div><div class="val">${escapeHtml(ref.referredBy)} (${ROLE_LABEL[ref.referredByRole]||ref.referredByRole})</div></div>
+        </div>
+      </div>
+      <div class="box">
+        <div class="lbl">Reason / Clinical findings</div>
+        <div class="val" style="white-space:pre-wrap;margin-top:6px">${escapeHtml(ref.reason)}</div>
+        ${ref.notes?`<div class="lbl" style="margin-top:14px">Additional notes</div><div class="val" style="white-space:pre-wrap">${escapeHtml(ref.notes)}</div>`:''}
+      </div>
+      <div class="sig">
+        <div>Referring Clinician</div>
+        <div>Receiving Facility</div>
+      </div>
+      <div class="noprint" style="text-align:center;margin-top:36px">
+        <button onclick="window.print()" style="padding:10px 22px;background:#0B6E4F;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Print slip</button>
+      </div>
+    </body></html>`);
+  win.document.close();
+}
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
-      <div id="dynamicContent" class="view"></div>
-    </main>
-  </div>
+async function viewReferrals(){
+  const list = await api('listReferrals');
+  $('#view').innerHTML = `
+    <h2>Referrals</h2>
+    <p class="sub">All referral slips generated</p>
+    <div class="toolbar">
+      <input id="rq" class="input" placeholder="Search…" />
+      <button class="btn secondary" id="r-exp">⬇ Export</button>
+    </div>
+    <div id="r-list"></div>`;
+  const render = f => {
+    const rows = list.filter(r=>!f||(r.patientName+r.to).toLowerCase().includes(f.toLowerCase()));
+    $('#r-list').innerHTML = rows.length? `<table><thead><tr><th>Ref ID</th><th>Patient</th><th>Referred to</th><th>Urgency</th><th>Date</th><th></th></tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td><code>${escapeHtml(r.refId)}</code></td>
+        <td><b>${escapeHtml(r.patientName)}</b></td>
+        <td>${escapeHtml(r.to)}</td>
+        <td><span class="badge ${r.urgency==='Urgent'?'red':r.urgency.startsWith('Soon')?'yellow':'green'}">${escapeHtml(r.urgency)}</span></td>
+        <td>${new Date(r.ts).toLocaleDateString('en-NG')}</td>
+        <td style="text-align:right"><button class="btn ghost" data-print="${r.refId}">Print</button></td>
+      </tr>`).join('')}</tbody></table>`:'<div class="empty">No referrals</div>';
+    $$('#r-list [data-print]').forEach(b=>b.onclick=()=>{
+      const r = list.find(x=>x.refId===b.dataset.print); if(r) printReferral(r);
+    });
+  };
+  render(); $('#rq').oninput=e=>render(e.target.value);
+  $('#r-exp').onclick=()=>exportMenu('referrals', list);
+}
 
-  <script src="app.js"></script>
+/* ---------- Staff (Coordinator) ---------- */
+async function viewStaff(){
+  const staff = await api('listStaff');
+  $('#view').innerHTML = `
+    <h2>Staff</h2>
+    <p class="sub">Invite and manage outreach personnel</p>
+    <div class="toolbar">
+      <button class="btn" id="inv">+ Invite staff</button>
+      <button class="btn secondary" id="s-exp">⬇ Export</button>
+    </div>
+    <div>${staff.length? `<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+      <tbody>${staff.map(s=>`<tr>
+        <td><b>${escapeHtml(s.fullName)}</b></td>
+        <td>${escapeHtml(s.email)}</td>
+        <td>${ROLE_LABEL[s.role]||s.role}</td>
+        <td>${s.mustChangePassword?'<span class="badge yellow">Temp password</span>':'<span class="badge green">Active</span>'}</td>
+        <td style="text-align:right"><button class="btn ghost" data-resend="${s.email}">Resend invite</button></td>
+      </tr>`).join('')}</tbody></table>`:'<div class="empty">No staff yet</div>'}</div>`;
+  $('#inv').onclick = inviteModal;
+  $('#s-exp').onclick = ()=>exportMenu('staff', staff);
+  $$('[data-resend]').forEach(b=>b.onclick=async()=>{
+    try{ await api('resendInvite',{email:b.dataset.resend}); toast('Invite re-sent'); }catch(e){ toast(e.message); }
+  });
+}
+
+function inviteModal(){
+  openModal(`
+    <h3>Invite staff</h3>
+    <p class="sub">An email invite with a temporary password will be sent</p>
+    <label>Full name</label><input id="i-name" class="input" />
+    <label>Email</label><input id="i-email" class="input" type="email" />
+    <label>Role</label>
+    <select id="i-role" class="input">
+      <option value="nurse">Nurse</option>
+      <option value="lab">Lab Technician</option>
+      <option value="optometrist">Optometrist / Ophthalmologist</option>
+      <option value="dentist">Dentist</option>
+      <option value="coordinator">Outreach Coordinator</option>
+    </select>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn" id="i-save" style="flex:1">Send invite</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`);
+  $('#i-save').onclick = async () => {
+    const name=$('#i-name').value.trim(), email=$('#i-email').value.trim(), role=$('#i-role').value;
+    if(!name||!email) return toast('Name and email required');
+    try{ await api('inviteStaff',{fullName:name, email, role}); toast('Invite sent'); closeModal(); goto('staff'); }
+    catch(e){ toast(e.message); }
+  };
+}
+
+/* ---------- Reports ---------- */
+async function viewReports(){
+  $('#view').innerHTML = `
+    <h2>Executive Reports</h2>
+    <p class="sub">PwC-style outreach performance summary (powered by Gemini)</p>
+    <div class="card">
+      <label>Select outreach (or all)</label>
+      <select id="rp-outreach" class="input"><option value="">— All outreaches —</option></select>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn" id="rp-gen" style="flex:1">✨ Generate report</button>
+      </div>
+    </div>
+    <div id="rp-out"></div>`;
+  const outs = await api('listOutreaches');
+  const sel = $('#rp-outreach'); outs.forEach(o=>sel.insertAdjacentHTML('beforeend', `<option value="${o.id}">${escapeHtml(o.name)} — ${fmtDate(o.date)}</option>`));
+  $('#rp-gen').onclick = async () => {
+    $('#rp-out').innerHTML = '<div class="card" style="text-align:center">Generating executive report…</div>';
+    try{
+      const r = await api('generateReport', { outreachId: sel.value });
+      $('#rp-out').innerHTML = `
+        <div class="card" style="margin-top:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <h3 style="margin:0">📊 ${escapeHtml(r.title)}</h3>
+            <button class="btn secondary" onclick="window.print()">🖨 Print</button>
+          </div>
+          <div style="white-space:pre-wrap;line-height:1.65;font-size:15px">${escapeHtml(r.content)}</div>
+        </div>`;
+    }catch(e){ $('#rp-out').innerHTML = `<div class="card" style="color:var(--danger)">${escapeHtml(e.message)}</div>`; }
+  };
+}
+
+/* ---------- Audit ---------- */
+async function viewAudit(){
+  const logs = await api('listAudit');
+  $('#view').innerHTML = `
+    <h2>Audit Log</h2>
+    <p class="sub">NDPA 2023 · Data processing trail</p>
+    <div>${logs.length? `<table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Patient</th><th>Outreach</th></tr></thead>
+      <tbody>${logs.map(l=>`<tr>
+        <td>${new Date(l.ts).toLocaleString('en-NG')}</td>
+        <td>${escapeHtml(l.user||'—')}</td>
+        <td>${escapeHtml(l.action)}</td>
+        <td>${escapeHtml(l.patient||'—')}</td>
+        <td>${escapeHtml(l.outreach||'—')}</td>
+      </tr>`).join('')}</tbody></table>`:'<div class="empty">No logs</div>'}</div>`;
+}
+
+/* ---------- Export ---------- */
+function exportMenu(type, rows){
+  openModal(`
+    <h3>Export</h3>
+    <p class="sub">Download records in your preferred format</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn" id="ex-xlsx">📊 Excel (.xlsx)</button>
+      <button class="btn secondary" id="ex-csv">📄 CSV</button>
+      <button class="btn secondary" id="ex-pdf">🧾 PDF</button>
+    </div>
+    <div style="margin-top:16px;text-align:right"><button class="btn ghost" onclick="closeModal()">Close</button></div>`);
+  $('#ex-xlsx').onclick = ()=>doExport(type, rows, 'xlsx');
+  $('#ex-csv').onclick  = ()=>doExport(type, rows, 'csv');
+  $('#ex-pdf').onclick  = ()=>doExport(type, rows, 'pdf');
+}
+
+function flattenForExport(type, rows){
+  if(type==='outreaches'){
+    return rows.map(o=>({Name:o.name, Date:fmtDate(o.date), Venue:o.venue, Site:o.site||'', Staff:o.staffCount||0, Patients:o.patientCount||0}));
+  }
+  if(type==='patients'){
+    return rows.map(p=>({RegID:p.regId, Name:p.fullName, Age:p.age, Sex:p.sex, Phone:p.phone, Email:p.email||'',
+      Vitals:p.vitalsDone?'Yes':'No', Lab:p.labDone?'Yes':'No', Eye:p.eyeDone?'Yes':'No', Dental:p.dentalDone?'Yes':'No',
+      Outreach:p.outreachName||''}));
+  }
+  if(type==='staff'){
+    return rows.map(s=>({Name:s.fullName, Email:s.email, Role:ROLE_LABEL[s.role]||s.role, Status:s.mustChangePassword?'Temp password':'Active'}));
+  }
+  if(type==='referrals'){
+    return rows.map(r=>({RefID:r.refId, Patient:r.patientName, RegID:r.regId, To:r.to, Urgency:r.urgency,
+      Reason:r.reason, By:r.referredBy, Date:new Date(r.ts).toLocaleString('en-NG')}));
+  }
+  return rows;
+}
+
+function doExport(type, rows, fmt){
+  const data = flattenForExport(type, rows);
+  const fname = `TWC_${type}_${new Date().toISOString().slice(0,10)}`;
+  if(fmt==='xlsx'){
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    XLSX.writeFile(wb, fname+'.xlsx');
+  } else if(fmt==='csv'){
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname+'.csv'; a.click();
+  } else {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape'});
+    doc.setFontSize(16); doc.setTextColor(11,110,79);
+    doc.text('TWC Outreach Tracker — '+type.charAt(0).toUpperCase()+type.slice(1), 14, 16);
+    doc.setFontSize(9); doc.setTextColor(120);
+    doc.text('Generated '+new Date().toLocaleString('en-NG'), 14, 22);
+    const cols = data.length? Object.keys(data[0]):[]; const body = data.map(r=>cols.map(c=>r[c]??''));
+    doc.autoTable({head:[cols], body, startY:28, styles:{fontSize:8}, headStyles:{fillColor:[11,110,79]}});
+    doc.save(fname+'.pdf');
+  }
+  closeModal(); toast('Exported '+fname);
+}
+
+/* ---------- PWA install ---------- */
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); window._deferredPrompt = e;
+  const t=$('#tabs'); if(t && !$('#install-btn')){
+    const b=document.createElement('button'); b.id='install-btn'; b.textContent='📲 Install app';
+    b.style.cssText='margin-left:auto;background:var(--brand);color:#fff';
+    b.onclick = async()=>{ window._deferredPrompt.prompt(); await window._deferredPrompt.userChoice; window._deferredPrompt=null; b.remove(); };
+    t.appendChild(b);
+  }
+});
+
+/* ---------- SW ---------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+}
+
+/* ---------- Auto-login ---------- */
+(function init(){
+  if(state.token && state.user) boot(); else showLogin();
+})();
+</script>
 </body>
 </html>
