@@ -375,7 +375,7 @@ tbody tr:hover td{background:#FAFBFC}
    TWC Outreach Tracker — Frontend (mobile-first)
    Backend: Google Apps Script Web App
    ============================================================ */
-const API_URL = 'https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzacAAleohftPLvR_gO36kdXE1ej4RBb8meiQs-sGSLq2UJfnN3SY16ZHOnaSvXIbKNVA/exec';
 
 const state = {
   token: localStorage.getItem('twc_token') || null,
@@ -425,32 +425,136 @@ function skeletonRows(n=3){
     </div>`).join('');
 }
 
-/* ---------- Auth ---------- */
-function showLogin(){ $('#login').style.display='flex'; $('#main').classList.add('hidden'); }
-function showMain(){ $('#login').style.display='none'; $('#main').classList.remove('hidden'); }
+/* ---------- Auth (hardened) ---------- */
+function showLogin(){
+  $('#login').style.display = 'flex';
+  $('#main').classList.add('hidden');
+  $('#main').style.display = 'none';
+}
+function showMain(){
+  $('#login').style.display = 'none';
+  $('#main').classList.remove('hidden');
+  $('#main').style.display = 'flex';
+}
+
+/* Show inline error under the login button */
+function setLoginError(msg){
+  let el = $('#login-error');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'login-error';
+    el.style.cssText = 'margin-top:14px;padding:11px 14px;background:#FEE2E2;color:#991B1B;border-radius:10px;font-size:13.5px;line-height:1.45;word-break:break-word';
+    $('#li-btn').parentNode.insertBefore(el, $('#li-btn').nextSibling);
+  }
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
 
 async function login(email, password){
-  const res = await fetch(API_URL, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify({ action:'login', email, password })
-  });
-  const data = await res.json();
-  if(!data.ok) throw new Error(data.error || 'Login failed');
+  // Guard: catch placeholder API_URL early
+  if(!API_URL || API_URL.includes('PASTE_YOUR_DEPLOYMENT_ID')){
+    throw new Error('API_URL is not configured. Replace PASTE_YOUR_DEPLOYMENT_ID in index.html with your Apps Script Web App URL.');
+  }
+
+  let res, text;
+  try {
+    res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'login', email, password }),
+      redirect: 'follow'
+    });
+  } catch(netErr){
+    throw new Error('Network error — cannot reach server. ' + netErr.message);
+  }
+
+  text = await res.text();
+  console.log('[TWC] Login HTTP', res.status, text.slice(0,300));
+
+  if(!res.ok){
+    throw new Error('Server returned HTTP ' + res.status + '. ' + (text.slice(0,180) || ''));
+  }
+
+  // Apps Script sometimes returns HTML (login page / error) instead of JSON
+  if(text.trim().startsWith('<')){
+    throw new Error('Server returned HTML instead of JSON. Check that the Web App is deployed with "Anyone" access and URL ends in /exec.');
+  }
+
+  let data;
+  try { data = JSON.parse(text); }
+  catch(e){ throw new Error('Invalid JSON from server: ' + text.slice(0,180)); }
+
+  if(!data.ok){
+    throw new Error(data.error || 'Login failed');
+  }
+
+  if(!data.data || !data.data.token || !data.data.user){
+    throw new Error('Malformed response from server (missing token/user).');
+  }
+
   state.token = data.data.token;
   state.user  = data.data.user;
   localStorage.setItem('twc_token', state.token);
   localStorage.setItem('twc_user', JSON.stringify(state.user));
-  if(data.data.mustChangePassword) promptPasswordChange(true);
-  else boot();
+
+  if(data.data.mustChangePassword){
+    // Hide login screen first so user sees the modal
+    showMain();
+    $('#u-avatar').textContent = (state.user.fullName || state.user.email).charAt(0).toUpperCase();
+    promptPasswordChange(true);
+  } else {
+    boot();
+  }
 }
 
-function logout(){
-  localStorage.removeItem('twc_token');
-  localStorage.removeItem('twc_user');
-  localStorage.removeItem('twc_outreach');
-  state.token = null; state.user = null; state.currentOutreach = null;
-  showLogin();
+$('#li-btn').onclick = async () => {
+  const email = $('#li-email').value.trim();
+  const pass  = $('#li-pass').value;
+  setLoginError('');
+  if(!email || !pass){ setLoginError('Enter email and password.'); return; }
+
+  const btn = $('#li-btn');
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  try {
+    await login(email, pass);
+    setLoginError('');
+  } catch(e){
+    console.error('[TWC] Login failed:', e);
+    setLoginError(e.message);
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+};
+
+$('#li-pass').addEventListener('keydown', e => { if(e.key === 'Enter') $('#li-btn').click(); });
+
+$('#logout').onclick = () => {
+  if(confirm('Sign out of TWC Outreach Tracker?')) logout();
+};
+
+function boot(){
+  try {
+    $('#u-avatar').textContent = (state.user.fullName || state.user.email || '?').charAt(0).toUpperCase();
+    showMain();
+    renderNav();
+    goto(state.currentTab || 'dashboard');
+    console.log('[TWC] Booted as', state.user.email, 'role:', state.user.role);
+  } catch(err){
+    console.error('[TWC] Boot failed:', err);
+    toast('App failed to load: ' + err.message, 'error');
+    // Still show main so user isn't stuck on login
+    showMain();
+    $('#view').innerHTML = `<div class="card" style="border-color:var(--danger)">
+      <b style="color:var(--danger)">Failed to initialise app</b>
+      <p style="margin:6px 0 0;font-size:13.5px;color:var(--muted)">${esc(err.message)}</p>
+      <p style="margin:12px 0 0;font-size:12.5px;color:var(--muted)">Check that your Apps Script Web App is deployed and SHEET_ID is set in Script Properties.</p>
+    </div>`;
+  }
 }
 
 /* ---------- Navigation ---------- */
