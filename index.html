@@ -476,7 +476,7 @@ function setLoginError(msg){
 }
 
 async function login(email, password){
-  if(!API_URL || API_URL.indexOf('PASTE_YOUR_DEPLOYMENT_ID') !== -1){
+  if(!API_URL || API_URL.indexOf('https://script.google.com/macros/s/AKfycbzacAAleohftPLvR_gO36kdXE1ej4RBb8meiQs-sGSLq2UJfnN3SY16ZHOnaSvXIbKNVA/exec') !== -1){
     throw new Error('API_URL is not configured. Replace PASTE_YOUR_DEPLOYMENT_ID in index.html with your Apps Script Web App URL.');
   }
 
