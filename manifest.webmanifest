@@ -1,0 +1,40 @@
+{
+  "id": "./",
+  "name": "TWC Outreach Tracker | MedCRM",
+  "short_name": "TWC Outreach",
+  "description": "Clinical Outreach & Epidemiological Surveillance PWA with iOS UI Skin, Personnel Invitations, and Google Apps Script Sync.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#F2F2F7",
+  "theme_color": "#0F2942",
+  "categories": ["medical", "health", "productivity"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
