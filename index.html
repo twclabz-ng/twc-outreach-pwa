@@ -44,15 +44,16 @@
   <div id="setupOverlay" class="setup-overlay hidden">
     <div class="setup-card">
       <h2>Connect Google Apps Script Web App</h2>
-      <p>Paste your deployed Google Apps Script <code>/exec</code> Web App URL below (or replace <code>DEFAULT_GAS_WEB_APP_URL</code> directly in <code>index.html</code>).</p>
-      <input id="gasUrlInput" class="setup-input" type="url" placeholder="https://script.google.com/macros/s/.../exec" />
+      <p>Your deployed Google Apps Script <code>/exec</code> Web App URL is pre-configured below. You can update it anytime if you create a new deployment.</p>
+      <input id="gasUrlInput" class="setup-input" type="url" value="https://script.google.com/macros/s/AKfycbyaY4yIr45B3aPNrYrYvc12hl0bcFhrcB6Tce0_1TxzwR5uapfEIuArjj1aD8f2Jbhl/exec" placeholder="https://script.google.com/macros/s/.../exec" />
       <button class="setup-btn" onclick="saveGasUrl()">Launch Outreach Tracker</button>
     </div>
   </div>
 
-  <iframe id="gasFrame" allow="clipboard-read; clipboard-write; geolocation"></iframe>
+  <iframe id="gasFrame" src="https://script.google.com/macros/s/AKfycbyaY4yIr45B3aPNrYrYvc12hl0bcFhrcB6Tce0_1TxzwR5uapfEIuArjj1aD8f2Jbhl/exec" allow="clipboard-read; clipboard-write; geolocation"></iframe>
 
   <script>
+    // Pre-configured with your live Google Apps Script /exec Web App URL:
     const DEFAULT_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaY4yIr45B3aPNrYrYvc12hl0bcFhrcB6Tce0_1TxzwR5uapfEIuArjj1aD8f2Jbhl/exec';
 
     if ('serviceWorker' in navigator) {
@@ -80,7 +81,7 @@
     }
 
     function openSetup() {
-      const savedUrl = localStorage.getItem('twc_gas_exec_url') || '';
+      const savedUrl = localStorage.getItem('twc_gas_exec_url') || DEFAULT_GAS_WEB_APP_URL;
       document.getElementById('gasUrlInput').value = savedUrl;
       document.getElementById('setupOverlay').classList.remove('hidden');
     }
